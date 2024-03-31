@@ -7,6 +7,7 @@ import { lusitana } from '@/app/_ui/fonts';
 import Pagination from '@/app/_ui/categories/pagination';
 import Search from '@/app/_ui/search';
 import { LinkToCreate } from '@/app/_ui/categories/buttons';
+import { CategoriesTableSkeleton } from '@/app/_ui/skeletons/skeletons';
 
 async function categories({
   searchParams,
@@ -34,7 +35,10 @@ async function categories({
         />
       </div>
 
-      <Suspense key={query + currentPage} fallback={<p> Loading....</p>}>
+      <Suspense
+        key={query + currentPage}
+        fallback={<CategoriesTableSkeleton />}
+      >
         <CategoriesTable query={query} currentPage={currentPage} />
       </Suspense>
       <div className='mt-5 flex w-full justify-center'>

@@ -1,11 +1,6 @@
 import { Metadata } from 'next';
 
-import {
-  fetchAllCategories,
-  fetchFilteredProducts,
-  fetchProductPages,
-  getCategoryTree,
-} from '@/app/_lib/data';
+import { fetchProductPages, getCategoryTree } from '@/app/_lib/data';
 import Search from '@/app/_ui/search';
 import { lusitana } from '@/app/_ui/fonts';
 import { LinkToCreate } from '@/app/_ui/categories/buttons';
@@ -13,9 +8,11 @@ import Breadcrumbs from '@/app/_ui/categories/BreadCrumbs';
 import ProductsTable from '@/app/_ui/products/table';
 import { Suspense } from 'react';
 import Pagination from '@/app/_ui/categories/pagination';
-import Link from 'next/link';
+
 import CategoryList from '@/app/_ui/categories/CategoryList';
 import DropDownClient from '@/app/_ui/products/DropDown';
+
+import { ProductTableSkeleton } from '@/app/_ui/skeletons/skeletons';
 
 export const metadata: Metadata = {
   title: 'Products',
@@ -73,7 +70,7 @@ async function Products({
         </DropDownClient>
       </div>
 
-      <Suspense key={query + currentPage} fallback={<p> Loading....</p>}>
+      <Suspense key={query + currentPage} fallback={<ProductTableSkeleton />}>
         <ProductsTable query={query} currentPage={currentPage} />
       </Suspense>
       <div className='mt-5 flex w-full justify-center'>
