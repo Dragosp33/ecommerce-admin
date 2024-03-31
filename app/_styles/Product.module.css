@@ -1,0 +1,10 @@
+.carousel .slider-wrapper.axis-horizontal .slider .slide {
+  display: flex !important;
+  justify-content: center !important;
+  flex-flow: column !important;
+}
+
+.btn-red {
+  color: yellow !important;
+  background-color: blue !important;
+}
