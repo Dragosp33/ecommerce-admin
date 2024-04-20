@@ -11,29 +11,6 @@ import { MongoDBAdapter } from '@auth/mongodb-adapter';
 
 import clientPromise from '@/app/_lib/mongodb';
 
-/*async function getUser(email: string): Promise<User | undefined> {
-  try {
-    const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
-    return user.rows[0];
-  } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
-  }
-}
-
-export async function isAdmin() {
-  const session = await getServerSession(authConfig);
-  const userEmail = session.auth
-  if (!userEmail) {
-    return false;
-  }
-  const userInfo = await UserInfo.findOne({ email: userEmail });
-  if (!userInfo) {
-    return false;
-  }
-  return userInfo.admin;
-}*/
-
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
   // adapter: MongoDBAdapter(clientPromise),

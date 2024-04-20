@@ -10,6 +10,7 @@ import { lusitana } from '@/app/_ui/fonts';
 import Pagination from '@/app/_ui/categories/pagination';
 import DropDownClient from '@/app/_ui/products/DropDown';
 import CategoryList from '@/app/_ui/categories/CategoryList';
+import { ProductTableSkeleton } from '@/app/_ui/skeletons/skeletons';
 
 export default async function Products({
   params,
@@ -63,7 +64,7 @@ export default async function Products({
           <CategoryList categories={categories} categoryName={categoryName} />
         </DropDownClient>
       </div>
-      <Suspense key={query + currentPage} fallback={<p> Loading....</p>}>
+      <Suspense key={query + currentPage} fallback={<ProductTableSkeleton />}>
         <ProductsTable
           query={query}
           currentPage={currentPage}
