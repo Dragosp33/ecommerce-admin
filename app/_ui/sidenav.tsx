@@ -14,6 +14,15 @@ export default function Nav() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const submitSignOut = async () => {
+    const res = await fetch('http://localhost:3000/api/auth/csrf', {
+      method: 'GET',
+      credentials: 'include',
+    });
+    const tok = await res.json();
+    console.log('token: ', tok);
+  };
+
   console.log('rerender: show is  ', show);
   return (
     <div>
@@ -206,28 +215,28 @@ export default function Nav() {
             </svg>
             Settings
           </Link>
-          <form action={signOutAction}>
-            <button
-              className='flex h-[48px] w-full grow items-center justify-start gap-2 rounded-md bg-gray-50 p-1 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-1 md:px-1'
-              type='submit'
+
+          <button
+            className='flex h-[48px] w-full grow items-center justify-start gap-2 rounded-md bg-gray-50 p-1 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-1 md:px-1'
+            type='button'
+            onClick={submitSignOut}
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+              strokeWidth={1.5}
+              stroke='currentColor'
+              className='w-6 h-6'
             >
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                fill='none'
-                viewBox='0 0 24 24'
-                strokeWidth={1.5}
-                stroke='currentColor'
-                className='w-6 h-6'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  d='M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75'
-                />
-              </svg>
-              <div className=''>Sign Out</div>
-            </button>
-          </form>
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75'
+              />
+            </svg>
+            <div className=''>Sign Out</div>
+          </button>
         </nav>
       </aside>
     </div>

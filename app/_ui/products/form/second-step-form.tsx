@@ -47,6 +47,7 @@ const SecondStepForm: FunctionComponent<SecondStepFormProps> = ({
     control,
     watch,
     setValue,
+    setError,
     formState: { errors },
   } = useForm<VariantForm>({
     resolver: zodResolver(variantFormSchema),
@@ -68,6 +69,10 @@ const SecondStepForm: FunctionComponent<SecondStepFormProps> = ({
       mode === 'create' ? await CreateProduct(m) : await EditProduct(id, m);
     } catch (error) {
       console.log('error', error);
+      setError('root', {
+        type: 'manual',
+        message: 'some error occurred..Please try again',
+      });
     }
   };
 

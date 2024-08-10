@@ -14,7 +14,6 @@ export type ProductState = {
   secondObject: VariantForm | null;
 };
 
-// Create your context
 export const AppStateContext = createContext<
   | {
       state: ProductState;
@@ -22,20 +21,17 @@ export const AppStateContext = createContext<
     }
   | undefined
 >(undefined);
-
-// Create your AppProvider component
+// Create an AppProvider component
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<ProductState>({
     firstObject: { properties: {}, title: '', category: '' },
     secondObject: null,
     photoDump: [],
   });
-
   // Function to update the state
   const updateState = (newState: Partial<ProductState>) => {
     setState((prevState) => ({ ...prevState, ...newState }));
   };
-
   return (
     <AppStateContext.Provider value={{ state, updateState }}>
       {children}
@@ -52,7 +48,7 @@ export function useAppState() {
   return context;
 }
 
-// Your layout component
+// Layout component
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>

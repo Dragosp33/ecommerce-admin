@@ -4,6 +4,7 @@ import { Category, CategoryField, Product } from '@/app/_lib/definitions';
 import mongoose from 'mongoose';
 import { CategoryModel } from '@/models/Category';
 import { ProductModel } from '@/models/Product';
+import { replaceIdDoc } from './utils';
 
 const ITEMS_PER_PAGE = 3;
 /**
@@ -295,21 +296,12 @@ export async function getCategoryTree() {
     const categories = await CategoryModel.find({}).exec();
 
     // Transform data into a nested structure (parse path, link parent-child)
-
-    // Example transformation (you'll need to adapt this based on your data):
     const transformedCategories = categories.map((category) => ({
       ...category.toObject(),
       children: categories.filter(
         (child) => child.parent?._id.toString() === category._id.toString()
       ),
     }));
-
-    /* console.log('transformed::::::');
-    console.log(transformedCategories);
-    console.log('JSON PARSED: ===============================');
-    console.log(JSON.parse(JSON.stringify(transformedCategories)));
-    console.log('=================================================');
-    */
     return transformedCategories;
   }
   return [];
@@ -435,6 +427,10 @@ export async function fetchFilteredProducts2(
   category?: string
 ): Promise<Product[]> {
   unstable_noStore();
+  const client = await clientPromise;
+  const db = client.db();
+  const productsCollection = db.collection('products');
+
   if (process.env.MONGODB_URI) {
     // try here
     await mongoose.connect(process.env.MONGODB_URI);
@@ -442,33 +438,35 @@ export async function fetchFilteredProducts2(
     if (category) {
       // If a category is provided, filter products based on the category and the query + page
       const regex = new RegExp(`,${category},`, 'i'); // Create a regex from the category
-      products = await ProductModel.aggregate([
-        {
-          $lookup: {
-            from: 'categories', // Replace with your actual categories collection name
-            localField: 'category',
-            foreignField: '_id',
-            as: 'category',
+      products = await productsCollection
+        .aggregate([
+          {
+            $lookup: {
+              from: 'categories',
+              localField: 'category',
+              foreignField: '_id',
+              as: 'category',
+            },
           },
-        },
-        { $unwind: '$category' },
-        {
-          $match: {
-            $and: [
-              {
-                $or: [
-                  { 'category.path': regex }, // Find products with "category" in their path
-                  { 'category.name': new RegExp(category, 'i') }, // Or products with "category" equal to the category parameter
-                ],
-              },
-              { title: { $regex: query, $options: 'i' } }, // And products with "title" matching the query
-            ],
+          { $unwind: '$category' },
+          {
+            $match: {
+              $and: [
+                {
+                  $or: [
+                    { 'category.path': regex }, // Find products with "category" in their path
+                    { 'category.name': new RegExp(category, 'i') }, // Or products with "category" equal to the category parameter
+                  ],
+                },
+                { title: { $regex: query, $options: 'i' } }, // And products with "title" matching the query
+              ],
+            },
           },
-        },
-        { $sort: { name: 1 } },
-        { $skip: (currentPage - 1) * ITEMS_PER_PAGE },
-        { $limit: ITEMS_PER_PAGE },
-      ]);
+          { $sort: { name: 1 } },
+          { $skip: (currentPage - 1) * ITEMS_PER_PAGE },
+          { $limit: ITEMS_PER_PAGE },
+        ])
+        .toArray();
       products = products.map((item) => ({
         properties: item.properties,
         title: item.title,
@@ -497,4 +495,34 @@ export async function fetchFilteredProducts2(
     return ret;
   }
   return [];
+}
+
+export async function fetchFeaturedProduct() {
+  const client = await clientPromise;
+  const db = client.db(); // Use your database name
+  const featuredVariant = await db
+    .collection('products')
+    .aggregate([
+      {
+        $match: {
+          'variants.featured': true,
+        },
+      },
+      {
+        $project: {
+          variants: {
+            $filter: {
+              input: '$variants',
+              as: 'variant',
+              cond: { $eq: ['$$variant.featured', true] },
+            },
+          },
+        },
+      },
+    ])
+    .toArray();
+
+  // Now `featuredVariant` contains an array with the featured variant(s)
+  console.log(featuredVariant[0]); // If you expect only one featured variant
+  return replaceIdDoc(featuredVariant[0]);
 }

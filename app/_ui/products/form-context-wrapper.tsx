@@ -9,7 +9,7 @@ import {
 import { FirstStepForm } from './form/first-step-form';
 import SecondStepForm from './form/second-step-form';
 
-// Define the props for your FirstStepForm component
+// Define the props for FirstStepForm component
 export interface FirstStepFormProps {
   categories: CategoryField[];
   context: {
@@ -27,13 +27,13 @@ export interface SecondStepFormProps {
   mode: 'create' | 'edit';
 }
 
-// Define the props for your higher-order component
+// Define props for higher-order component
 interface WithContextProps {
   mode: 'create' | 'edit';
-  [key: string]: any; // This allows you to pass any additional props
+  [key: string]: any;
 }
 
-// Higher-order component that decides which context to provide
+// Higher-order component , create or edit provider
 const withContext = (Component: ComponentType<FirstStepFormProps>) => {
   const WithContextComponent: FunctionComponent<WithContextProps> = ({
     mode,
@@ -43,7 +43,9 @@ const withContext = (Component: ComponentType<FirstStepFormProps>) => {
       <AppStateContext.Consumer>
         {(context) => {
           if (!context) {
-            throw new Error('useAppState must be used within the AppProvider');
+            throw new Error(
+              'useAppState must be used within the Create Provider'
+            );
           }
           return (
             <Component
@@ -59,7 +61,9 @@ const withContext = (Component: ComponentType<FirstStepFormProps>) => {
       <EditStateContext.Consumer>
         {(context) => {
           if (!context) {
-            throw new Error('useAppState must be used within the AppProvider');
+            throw new Error(
+              'editor state must be used within the Edit Provider'
+            );
           }
 
           return (

@@ -3,8 +3,6 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { AuthError } from 'next-auth';
-import { signIn, signOut } from '@/auth';
 
 import {
   CreateCategorySchema,
@@ -42,28 +40,18 @@ const FormSchema = z.object({
   ),*/
 });
 
-export async function authenticate(
-  prevState: string | undefined,
-  formData: FormData
-) {
-  try {
-    await signIn('credentials', formData);
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case 'CredentialsSignin':
-          return 'Invalid credentials.';
-        default:
-          return 'Something went wrong.';
-      }
-    }
-    throw error;
-  }
-}
-
-export async function signOutAction() {
-  await signOut();
-}
+export const signOutAction = async (cookies: any) => {
+  console.log('???', `${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/signout`);
+  console.log('COOOKIESS: ', cookies);
+  await fetch(`${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/signout`, {
+    method: 'POST',
+    credentials: 'include', // This includes cookies in the request
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookies,
+    },
+  });
+};
 
 export type CategoryState = {
   errors?: {
@@ -115,20 +103,15 @@ export async function saveCategory(
 ) {
   const result = CreateCategorySchema.safeParse(formdata);
   console.log('result: ', result);
-
   let k;
   if (!result.success) {
     return { success: false, error: result.error.format() };
   } else {
     k = { success: true, data: result.data };
     let parent;
-    /* */ console.log('properties: ', k.data.properties);
     const client = await clientPromise;
-    const db = client.db(); // Use your database name
-
-    // Assuming you have a "categories" collection
+    const db = client.db();
     const categoriesCollection = db.collection('categories');
-
     const mergedProperties = mergeProperties(k.data);
     let newCategory;
     if (k.data.parentCategory?.trim()) {
@@ -161,15 +144,8 @@ export async function saveCategory(
       });
     }
 
-    //const mergedProperties = mergeProperties(k.data);
-
-    // db.collection('categories');
-
-    //await categoriesCollection.insertOne({ newCategory });
     console.log('new category is::: ', newCategory);
     await categoriesCollection.insertOne(newCategory);
-    //await newCategory.save();
-
     revalidatePath('/dashboard/categories');
     redirect('/dashboard/categories');
   }
@@ -310,11 +286,6 @@ export async function createPresignedUrlWithClient(
 ) {
   const s3Client = new S3Client({
     region: process.env.AWS_REGION, // Read from environment variable
-    /* credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-    }, // Load AWS access keys from environment variables
-    endpoint: 'https://s3.eu-west-3.amazonaws.com',*/
   });
   let id = randomUUID();
   const uidKey = `${id}-${key}`;
@@ -323,20 +294,17 @@ export async function createPresignedUrlWithClient(
     Key: `temporary/${uidKey}`,
   });
   if (permanentLink) {
-    console.log('PERMALINK PRESENT:: ');
     const copyCommand = new CopyObjectCommand({
       Bucket: S3_BUCKET,
       CopySource: permanentLink,
       Key: `temporary/${uidKey}`,
     });
-    console.log('COPY COMMAND: ', copyCommand);
     await s3Client.send(copyCommand);
   }
   let presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-  let previewLink = `https://photobucket333.s3.eu-west-3.amazonaws.com/temporary/${id}-${key}`;
+  let previewLink = `${process.env.AWS_ENDPOINT}/temporary/${id}-${key}`;
   let permaLink =
-    permanentLink ||
-    `https://photobucket333.s3.eu-west-3.amazonaws.com/permanent/${id}-${key}`;
+    permanentLink || `${process.env.AWS_ENDPOINT}/permanent/${id}-${key}`;
   return { presignedUrl, previewLink, uidKey, permaLink };
 }
 
@@ -441,7 +409,7 @@ export async function CreateProduct(data: finalSubmission) {
   };
   console.log('product to be added to db: ', productData);
   const client = await clientPromise;
-  const db = client.db(); // Use your database name
+  const db = client.db();
 
   // Assuming you have a "categories" collection
   const productsCollection = db.collection('products');

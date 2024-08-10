@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+
 export const generatePagination = (currentPage: number, totalPages: number) => {
   // If the total number of pages is 7 or less,
   // display all pages without any ellipsis.
@@ -30,3 +32,12 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
     totalPages,
   ];
 };
+
+export function replaceIdDoc(doc: mongoose.mongo.BSON.Document | null) {
+  if (!doc) {
+    return null;
+  }
+  doc.id = doc._id.toString();
+  delete doc._id;
+  return doc;
+}

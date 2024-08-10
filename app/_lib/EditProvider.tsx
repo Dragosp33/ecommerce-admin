@@ -14,10 +14,8 @@ type ProductState = {
   secondObject: VariantForm | null;
 };
 
-// Define your EditProductState type
 type EditProductState = ProductState;
 
-// Create your context
 export const EditStateContext = createContext<
   | {
       state: EditProductState;
@@ -26,7 +24,7 @@ export const EditStateContext = createContext<
   | undefined
 >(undefined);
 
-// Create your EditProvider component
+// Create a provider
 export function EditProvider({
   children,
   initialData,

@@ -57,9 +57,6 @@ function mergeProperties(data: InputProperty[]) {
   for (const name in mergedProperties) {
     mergedProperties[name] = Array.from(new Set(mergedProperties[name]));
   }
-
-  // Now mergedProperties contains the desired merged values
-  console.log('Merged properties:', mergedProperties);
   return mergedProperties;
 }
 
@@ -137,16 +134,11 @@ export const FirstStepForm: FunctionComponent<FirstStepFormProps> = ({
    * @param data - data from the form
    */
   const onSubmit = async (data: Inputs) => {
-    console.log(data);
     const k = transformInputs(data);
-    // updateProperties(k);
-    console.log('transformed inputs: ', k);
-
     // Get all keys from context.state.firstObject.properties
     const firstObjectPropertiesKeys = Object.keys(
       context.state.firstObject.properties
     );
-
     // Check if all keys from firstObjectPropertiesKeys exist in k.properties
     const allKeysExist = firstObjectPropertiesKeys.every(
       (key) => key in k.properties
@@ -168,7 +160,6 @@ export const FirstStepForm: FunctionComponent<FirstStepFormProps> = ({
           properties: {},
         })
       );
-
       updatingState = {
         ...updatingState,
         secondObject:
@@ -177,11 +168,8 @@ export const FirstStepForm: FunctionComponent<FirstStepFormProps> = ({
           } || null,
       };
     }
-
     context.updateState(updatingState);
-
     router.push(`${path}/variants`);
-    //router.push(`./variants`);
   };
 
   const {
