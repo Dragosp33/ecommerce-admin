@@ -4,7 +4,9 @@ export async function middleware(request: NextRequest) {
   const { nextUrl } = request;
   //console.log({ cookies: request.cookies });
 
-  //console.log(request.cookies.toString());
+  console.log(request.cookies.toString());
+  console.log(`${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/session`);
+
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/session`,
     {
