@@ -3,7 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   // Create a response with a redirect
   console.log('GET VERIFIED-SESSION::');
-  const response = NextResponse.redirect('/dashboard');
+  const response = NextResponse.redirect(
+    `${process.env.NEXT_PUBLIC_INTERNAL_URL}/dashboard` ||
+      'http://localhost:3001/dashboard'
+  );
 
   // Extract cookies from the request if needed
   const cookies = request.cookies.getAll();
