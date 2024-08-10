@@ -8,7 +8,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
-            value: 'http://localhost:3000',
+            value: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:3000',
           },
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
           {
