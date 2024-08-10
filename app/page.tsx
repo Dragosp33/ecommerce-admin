@@ -17,10 +17,10 @@ export default function Page() {
           <p
             className={`${lusitana.className} text-xl text-gray-800 md:text-3xl md:leading-normal`}
           >
-            <strong>Welcome to DPC.</strong> This is the admin portal for
+            <strong>Welcome to DPC. </strong> This is the admin portal for
             <a
-              href='https://nextjs.org/learn/'
-              className='text-blue-500'
+              href={`${process.env.NEXT_PUBLIC_AUTH_URL}`}
+              className='text-blue-500 mr-2'
               aria-disabled
             >
               a Nextjs ecommerce web app
