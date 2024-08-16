@@ -15,10 +15,13 @@ export default function Nav() {
   const pathname = usePathname();
 
   const submitSignOut = async () => {
-    const res = await fetch('http://localhost:3000/api/auth/csrf', {
-      method: 'GET',
-      credentials: 'include',
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/csrf`,
+      {
+        method: 'GET',
+        credentials: 'include',
+      }
+    );
     const tok = await res.json();
     console.log('token: ', tok);
   };
