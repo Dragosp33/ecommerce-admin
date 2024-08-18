@@ -24,6 +24,25 @@ export default function Nav() {
     );
     const tok = await res.json();
     console.log('token: ', tok);
+    const body = JSON.stringify({
+      csrfToken: tok.csrfToken,
+    });
+    console.log('BODY: ', body);
+    const res2 = await fetch(
+      `${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/signout?callbackUrl=/api/auth/session'`,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        /* body: await fetch(`${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/csrf`, {
+          method: 'GET',
+          credentials: 'include',
+        }).then((rs) => rs.text()),*/
+        body: body,
+      }
+    );
   };
 
   console.log('rerender: show is  ', show);

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev-domain": "next dev -p 3001 -H admin.shop.localhost",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
