@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
 
     console.log({ user_session }, user_session?.user?.role);
     if (!user_session || user_session.user.role == 'USER') {
-      return Response.redirect(new URL('/login', nextUrl));
+      return Response.redirect(new URL('/', nextUrl));
     }
     return;
   }

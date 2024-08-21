@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { signOutAction } from '@/app/_lib/actions';
+import { deleteSession } from '../_lib/session';
 
 export default function Nav() {
   const [show, setShow] = useState(false);
@@ -15,34 +16,12 @@ export default function Nav() {
   const pathname = usePathname();
 
   const submitSignOut = async () => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/csrf`,
-      {
-        method: 'GET',
-        credentials: 'include',
-      }
-    );
-    const tok = await res.json();
-    console.log('token: ', tok);
-    const body = JSON.stringify({
-      csrfToken: tok.csrfToken,
-    });
-    console.log('BODY: ', body);
-    const res2 = await fetch(
-      `${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/signout?callbackUrl=/api/auth/session'`,
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        /* body: await fetch(`${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/csrf`, {
-          method: 'GET',
-          credentials: 'include',
-        }).then((rs) => rs.text()),*/
-        body: body,
-      }
-    );
+    const res = await deleteSession();
+    //router.push('/');
+    console.log(res);
+    if (res.success) {
+      router.push('/');
+    }
   };
 
   console.log('rerender: show is  ', show);
