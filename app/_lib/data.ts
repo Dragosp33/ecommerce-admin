@@ -510,6 +510,7 @@ export async function fetchFeaturedProduct() {
       },
       {
         $project: {
+          title: 1, // Include the main product title
           variants: {
             $filter: {
               input: '$variants',
