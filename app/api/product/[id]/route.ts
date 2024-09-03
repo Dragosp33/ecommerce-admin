@@ -77,9 +77,11 @@ export async function GET(
     }
 
     searchParams.forEach((param, key) => console.log(key, param));
+    console.log('Error after line 80');
 
     // Convert searchParams to an object for easier handling
     const parsedProperties = Object.fromEntries(searchParams.entries());
+    console.log('Error after line 84');
 
     // Find the exact matching variant
     const exactMatch = product.variants.find((variant: any) => {
@@ -87,12 +89,13 @@ export async function GET(
         return variant.properties[key] === value;
       });
     });
+    console.log('Error after line 91', exactMatch);
 
     if (!exactMatch) {
       return Response.json({ error: 'Variant not found' }, { status: 404 });
     }
 
-    console.log({ exactMatch });
+    //console.log({ exactMatch });
     // Find related variants (differ by only one property)
     const relatedVariants = product.variants.filter((variant: any) => {
       // Count the number of differing properties
