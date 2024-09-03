@@ -27,9 +27,50 @@ export async function GET(
       return Response.json({ error: 'not found' }, { status: 404 });
     }
 
-    const product = await db
+    /*const product = await db
       .collection('products')
-      .findOne({ _id: new ObjectId(id) });
+      .findOne({ _id: new ObjectId(id) });*/
+
+    const productWithCategory = await db
+      .collection('products')
+      .aggregate([
+        {
+          // Match the product by its ID
+          $match: { _id: new ObjectId(id) },
+        },
+        {
+          // Perform a lookup to join with the categories collection
+          $lookup: {
+            from: 'categories', // The name of the categories collection
+            localField: 'category', // The field in products that references the category by ObjectId
+            foreignField: '_id', // The field in categories to match with
+            as: 'categoryInfo', // The name of the field in the output document where the matched categories will be stored
+          },
+        },
+        {
+          // Unwind the categoryInfo array to treat it as an object
+          $unwind: {
+            path: '$categoryInfo',
+            preserveNullAndEmptyArrays: true, // Optional: if you want products without a category to still appear
+          },
+        },
+        {
+          // Optionally project the fields you want
+          $project: {
+            title: 1,
+            description: 1,
+            // Include other product fields as needed
+            'categoryInfo.name': 1, // Include the category name
+            'categoryInfo.path': 1, // Include the category path
+            variants: 1,
+            properties: 1,
+          },
+        },
+      ])
+      .toArray();
+
+    // Assuming you want just the first item
+    const product = productWithCategory[0];
 
     if (!product) {
       return Response.json({ error: 'Product not found' }, { status: 404 });
@@ -66,7 +107,13 @@ export async function GET(
 
     console.log('Related Variants:', relatedVariants);
 
-    return Response.json({ exactMatch, relatedVariants }, { status: 200 });
+    const { categoryInfo } = product;
+    console.log('CATEGORY: ', categoryInfo);
+
+    return Response.json(
+      { exactMatch, relatedVariants, categoryInfo },
+      { status: 200 }
+    );
   } catch (exception: any) {
     console.error('Exception caught:', exception);
 
