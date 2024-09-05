@@ -434,6 +434,7 @@ export async function deleteOneProduct(id: String) {
     _id: new ObjectId(id),
   });
   console.log(response);
+  revalidatePath('/dashboard/products');
 }
 
 export async function EditProduct(id: String, data: finalSubmission) {

@@ -103,6 +103,7 @@ const SecondStepForm: FunctionComponent<SecondStepFormProps> = ({
                 description: '',
                 SKU: '',
                 photos: [],
+                stock: 0,
                 thumbnail: '',
               })
             }
@@ -259,6 +260,39 @@ const SecondStepForm: FunctionComponent<SecondStepFormProps> = ({
                           <p className='mt-2 text-sm text-red-500'>
                             {' '}
                             {errors.variants.at(index)?.price?.message}
+                          </p>
+                        )}
+                    </div>
+                  </div>
+                  {/* Price: */}
+                  <div className='w-full mx-2'>
+                    <label
+                      htmlFor={`variants.${index}.price`}
+                      className='mb-2 block text-sm font-md'
+                    >
+                      Stock
+                    </label>
+                    <div className='relative'>
+                      <input
+                        type='number'
+                        step={1}
+                        id={`variants.${index}.stock`}
+                        {...register(`variants.${index}.stock`)}
+                        className='peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-md outline-2 placeholder:text-gray-500 font-md'
+                        defaultValue=''
+                        aria-describedby={`variants.${index}.stock-error`}
+                      />
+                    </div>
+                    <div
+                      id={`variants.${index}.stock-error`}
+                      aria-live='polite'
+                      aria-atomic='true'
+                    >
+                      {errors?.variants?.at &&
+                        errors.variants.at(index)?.stock?.message && (
+                          <p className='mt-2 text-sm text-red-500'>
+                            {' '}
+                            {errors.variants.at(index)?.stock?.message}
                           </p>
                         )}
                     </div>

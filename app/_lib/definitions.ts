@@ -101,6 +101,7 @@ const variantSchema = z.object({
       message: 'Properties object must contain at least one key-value pair',
     }),
   description: z.string(),
+  stock: z.coerce.number(),
   photos: z.array(z.string().url()),
   thumbnail: z.string(),
 });
