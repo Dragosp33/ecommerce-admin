@@ -2,13 +2,10 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const { nextUrl } = request;
-  //console.log({ cookies: request.cookies });
 
-  //console.log('middleware cookies: ', request.cookies.toString());
-  //console.log('middleware headers: ', request.headers);
-
-  //console.log(`${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/session`);
-
+  if (nextUrl.pathname.startsWith('/api')) {
+    return;
+  }
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_AUTH_URL}/api/auth/session`,
     {
