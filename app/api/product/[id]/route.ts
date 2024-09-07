@@ -90,6 +90,7 @@ export async function GET(
       });
     });
     console.log('Error after line 91', exactMatch);
+    exactMatch.id = product._id.toString();
 
     if (!exactMatch) {
       return Response.json({ error: 'Variant not found' }, { status: 404 });

@@ -93,14 +93,20 @@ const variantSchema = z.object({
     }
     return s.trim();
   }),
-  SKU: z.string(),
+  SKU: z
+    .string()
+    .min(4, 'At least 4 chars for the identifier')
+    .max(24, 'Maximum 24chars for identifier'),
   price: z.coerce.number(),
   properties: z
     .record(z.string().min(2), z.string().min(2))
     .refine((obj) => Object.keys(obj).length > 0, {
       message: 'Properties object must contain at least one key-value pair',
     }),
-  description: z.string(),
+  description: z
+    .string()
+    .min(50, 'Minimum 50chars for description')
+    .max(500, 'Maximum 500 characters for description'),
   stock: z.coerce.number(),
   photos: z.array(z.string().url()),
   thumbnail: z.string(),

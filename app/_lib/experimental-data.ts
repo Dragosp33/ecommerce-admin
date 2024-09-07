@@ -134,3 +134,69 @@ export async function fetchSingleProduct2(id: string) {
   }
   return;
 }
+
+async function getBestSellersInfo() {
+  const client = await clientPromise;
+  const db = client.db(); // Use your database name
+
+  const k = await db
+    .collection('orders')
+    .aggregate([
+      // Match only paid orders
+      { $match: { status: 'paid' } },
+
+      // Unwind the products array to deconstruct it into multiple documents
+      { $unwind: '$products' },
+
+      // Group by SKU and sum the amount sold for each SKU
+      {
+        $group: {
+          _id: '$products.SKU', // Group by SKU
+          totalSold: { $sum: '$products.quantity' }, // Sum the amount field to get total quantity sold
+        },
+      },
+
+      // Sort by totalSold in descending order to get the most sold SKUs at the top
+      { $sort: { totalSold: -1 } },
+
+      // Optionally, limit the results to top N most sold SKUs
+      { $limit: 10 }, // Replace 10 with the desired number of results
+
+      // Lookup the variant information from the products collection
+      {
+        $lookup: {
+          from: 'products', // The products collection
+          localField: '_id', // Field from the aggregation pipeline (SKU)
+          foreignField: 'variants.SKU', // Field from the products collection
+          as: 'productDetails', // Name of the output array field
+        },
+      },
+
+      // Unwind the productDetails array to access the individual product documents
+      { $unwind: '$productDetails' },
+
+      // Project only the matching variant using $filter
+      {
+        $project: {
+          //SKU: '$_id', // Include the SKU field
+          _id: '$productDetails._id',
+          totalSold: 1, // Include the totalSold field
+          variant: {
+            $arrayElemAt: [
+              {
+                $filter: {
+                  input: '$productDetails.variants', // Array to filter
+                  as: 'variant', // Alias for the array elements
+                  cond: { $eq: ['$$variant.SKU', '$_id'] }, // Condition to match the SKU
+                },
+              },
+              0,
+            ],
+          },
+        },
+      },
+    ])
+    .toArray();
+
+  console.log(k);
+}

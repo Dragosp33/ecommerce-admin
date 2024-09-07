@@ -1,7 +1,7 @@
 'use client';
 
 import React, { FunctionComponent } from 'react';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { redirect, useParams, usePathname, useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { Button } from '../../button';
 import { TrashIcon, CurrencyEuroIcon } from '@heroicons/react/24/outline';
@@ -14,8 +14,16 @@ import {
   variantFormSchema,
   finalSubmission,
 } from '@/app/_lib/definitions';
-import { CreateProduct, EditProduct, MoveAllPhotos } from '@/app/_lib/actions';
+import {
+  addProduct,
+  CreateProduct,
+  EditProduct,
+  MoveAllPhotos,
+} from '@/app/_lib/actions';
 import { SecondStepFormProps } from '../form-context-wrapper';
+import { revalidatePath } from 'next/cache';
+import clearCachesByServerAction from '@/app/_lib/revalidate-cache';
+//import { CustomError } from '@/app/_lib/errors';
 
 const SecondStepForm: FunctionComponent<SecondStepFormProps> = ({
   context,
@@ -59,20 +67,45 @@ const SecondStepForm: FunctionComponent<SecondStepFormProps> = ({
       appcontext.updateState({
         secondObject: data,
       });
-      await MoveAllPhotos(appcontext.state.photoDump);
+      //
       const m: finalSubmission = {
         ...appcontext.state.firstObject,
         ...data,
       };
       console.log('final form to submit: ', m, typeof m);
       const id = Array.isArray(params.id) ? params.id[0] : params.id;
-      mode === 'create' ? await CreateProduct(m) : await EditProduct(id, m);
-    } catch (error) {
-      console.log('error', error);
-      setError('root', {
-        type: 'manual',
-        message: 'some error occurred..Please try again',
-      });
+      // mode === 'create' ? await CreateProduct(m) : await EditProduct(id, m);
+      mode === 'create' ? await addProduct(m) : await EditProduct(id, m);
+
+      await MoveAllPhotos(appcontext.state.photoDump);
+    } catch (error: any) {
+      console.log('error????', error);
+      let parsedError;
+      try {
+        parsedError = JSON.parse(error.message);
+      } catch (e) {
+        console.log('COULD NOT PARSE THE JSON!!!!!!!!!!');
+        parsedError = error; // If parsing fails, use the original error
+      }
+
+      if (
+        parsedError.message === 'SKU-duplicate' &&
+        parsedError.index !== undefined
+      ) {
+        setError(
+          `variants.${Number(parsedError.index)}.SKU`,
+          {
+            type: 'validate',
+            message: 'SKU is already present for another product.',
+          },
+          { shouldFocus: true }
+        );
+      } else {
+        setError('root', {
+          type: 'manual',
+          message: 'some error occurred..Please try again',
+        });
+      }
     }
   };
 
@@ -227,8 +260,21 @@ const SecondStepForm: FunctionComponent<SecondStepFormProps> = ({
                       //name='name'
                       className='peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-5 md:pl-10 text-md outline-2 placeholder:text-gray-500 font-md'
                       defaultValue=''
-                      //aria-describedby='name-error'
+                      aria-describedby={`variants.${index}.SKU`}
                     />
+                    <div
+                      id={`variants.${index}.SKU`}
+                      aria-live='polite'
+                      aria-atomic='true'
+                    >
+                      {errors.variants?.at &&
+                        errors?.variants?.at(index)?.SKU && (
+                          <p className='mt-2 text-sm text-red-500'>
+                            {errors?.variants?.at(index)?.SKU &&
+                              errors?.variants?.at(index)?.SKU?.message}
+                          </p>
+                        )}
+                    </div>
                   </div>
                   {/* Price: */}
                   <div className='w-full mx-2'>

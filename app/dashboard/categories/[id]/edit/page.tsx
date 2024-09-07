@@ -45,7 +45,9 @@ export default async function Page({ params }: { params: { id: string } }) {
     fetchCategoryById(id),
     fetchAllCategories(),
   ]);
+  console.log('FOUND CATEGORY', category);
   if (!category) {
+    console.log('NOT FOUND CATEGORY!!!!!!!!!!!!!!!!!!');
     notFound();
   }
   return (

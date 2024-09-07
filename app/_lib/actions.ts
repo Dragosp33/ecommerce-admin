@@ -16,7 +16,7 @@ import {
 import { CategoryModel } from '@/models/Category';
 import mongoose from 'mongoose';
 import clientPromise from './mongodb';
-import { ObjectId } from 'mongodb';
+import { MongoServerError, ObjectId } from 'mongodb';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { CopyObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -219,13 +219,13 @@ export async function deleteOneCategory(id: string) {
       _id: new mongoose.Types.ObjectId(id),
     });
 
+    if (!categoryToDelete) return;
     // Delete all products in this category
     await productsCollection.deleteMany(
       { category: new mongoose.Types.ObjectId(id) },
       { session }
     );
 
-    if (!categoryToDelete) return;
     // Find all categories that have the name of the deleted category in their path
     const categoriesToUpdate = await categoriesCollection
       .find({ path: new RegExp(`,${categoryToDelete.name},`, 'g') })
@@ -263,6 +263,8 @@ export async function deleteOneCategory(id: string) {
     session.abortTransaction(); // Abort the transaction
   } finally {
     session.endSession(); // End the session
+    revalidatePath('/dashboard/categories');
+    redirect('/dashboard/categories');
   }
 }
 
@@ -343,8 +345,11 @@ export async function moveToPermanentFolder(key: string, permaLink?: string) {
     let permanetLink =
       permaLink ||
       `https://photobucket333.s3.eu-west-3.amazonaws.com/permanent/${key}`;
+    console.log('successfully copied: ', key);
     return permanetLink;
-  } catch {
+  } catch (error) {
+    console.log('error at key: ', key);
+    console.log(error);
     throw new Error(`could not update key=${key}`);
   }
 }
@@ -389,6 +394,8 @@ export async function MoveAllPhotos(photos: Photo[]) {
     moveToPermanentFolder(photo.altText, photo.permaLink)
   );
   await Promise.all(promises);
+  revalidatePath('/dashboard/products');
+  redirect('/dashboard/products');
 }
 
 /**
@@ -420,6 +427,122 @@ export async function CreateProduct(data: finalSubmission) {
   redirect('/dashboard/products');
 }
 
+export async function addProduct(data: finalSubmission) {
+  const result = variantFormSchema.safeParse(data);
+  if (!result.success) {
+    return result.error;
+  }
+  const parsedData = result.data;
+  const productData = {
+    ...data,
+    category: new ObjectId(data.category), // Convert string to ObjectId
+    variants: parsedData.variants,
+  };
+  console.log('product to be added to db: ', productData);
+  const client = await clientPromise;
+  const db = client.db();
+
+  // Assuming you have a "categories" collection
+  const productsCollection = db.collection('products');
+  const categoryCollection = db.collection('categories');
+
+  const session = client.startSession();
+  session.startTransaction();
+
+  try {
+    // Fetch the category by ID
+    const categoryId = productData.category;
+    const category = await categoryCollection.findOne(
+      { _id: categoryId },
+      { session }
+    );
+
+    if (!category) {
+      throw new Error('Category not found');
+    }
+
+    // Check and update category properties
+    let categoryUpdated = false;
+    console.log('proprietati  ', productData.properties);
+    for (const [property, values] of Object.entries(productData.properties)) {
+      console.log('PROPERTY - ', property, ' VALUE - ', values);
+      if (!category.properties) {
+        category.properties = {};
+      }
+      if (!category.properties[property]) {
+        // If the property is missing, add it to the category
+        category.properties[property] = [...new Set(values)]; // Convert Set to array
+        categoryUpdated = true;
+      } else {
+        // If the property exists, check for missing values
+        const missingValues = values.filter(
+          (value) => !category.properties[property].includes(value)
+        );
+
+        if (missingValues.length > 0) {
+          // Add missing values to the category property
+          category.properties[property].push(...missingValues);
+          category.properties[property] = [
+            ...new Set(category.properties[property]),
+          ];
+          categoryUpdated = true;
+        }
+      }
+    }
+
+    // Update the category if it was modified
+    if (categoryUpdated) {
+      console.log('CATEGORY    IN UPDATEEE::: ');
+      console.log(category);
+      await categoryCollection.updateOne(
+        { _id: categoryId },
+        { $set: { properties: category.properties } },
+        { session }
+      );
+    }
+
+    // Save the new product
+    await productsCollection.insertOne(productData, { session });
+
+    await session.commitTransaction();
+    console.log('Product added successfully and category updated');
+  } catch (error) {
+    await session.abortTransaction();
+    console.error('Error adding product:', error);
+
+    if (error instanceof MongoServerError && error.code === 11000) {
+      // Use a regular expression to extract the SKU from the error message
+      const skuMatch = error.message.match(
+        /dup key: { variants.SKU: "(.*?)" }/
+      );
+      const duplicateSKU = skuMatch ? skuMatch[1] : null;
+
+      console.error(
+        `Duplicate key error: A product with SKU "${duplicateSKU}" already exists.`
+      );
+
+      const index = productData.variants.findIndex(
+        (x) => x.SKU === duplicateSKU
+      );
+      console.log('INDEX FOUND: ', index);
+      /*const k = new CustomError(
+        index,
+        `SKU-duplicate`,
+        `variants.${index}.SKU`
+      );
+      console.log(k);*/
+      //throw new Error('SKU-duplicate', { cause: 0 });
+      throw new Error(
+        JSON.stringify({ message: 'SKU-duplicate', index: index })
+      );
+    }
+  } finally {
+    session.endSession();
+  }
+}
+//revalidatePath('/dashboard/products');
+//redirect('/dashboard/products');
+
 /**
  * Deletes one product including all its variants from the database.
  * @param id - the id of the product that will be deleted;
@@ -450,16 +573,15 @@ export async function EditProduct(id: String, data: finalSubmission) {
   };
   console.log('product to be added to db: ', productData);
   const client = await clientPromise;
-  const db = client.db(); // Use your database name
+  const db = client.db();
 
-  // Assuming you have a "categories" collection
   const productsCollection = db.collection('products');
-  // productsCollection.findOneAndUpdate({ _id: id }, productData);
+
   const response = await productsCollection.replaceOne(
     { _id: new ObjectId(id) },
     productData
   );
   console.log(response);
-  revalidatePath('/dashboard/products');
-  redirect('/dashboard/products');
+  /*revalidatePath('/dashboard/products');
+  redirect('/dashboard/products');*/
 }

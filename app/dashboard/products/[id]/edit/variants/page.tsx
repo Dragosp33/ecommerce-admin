@@ -11,7 +11,7 @@ async function EditProductVariants() {
 
   return (
     <div>
-      <div> Second Form : </div>
+      <div> Edit your variants </div>
       <SecondStepFormWithContext mode='edit' />
     </div>
   );

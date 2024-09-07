@@ -54,7 +54,7 @@ export async function fetchCategoryById(id: string) {
         'name'
       );
       const propertiesFormatted = [];
-      console.log(category);
+      console.log('CATEGORY IN FINDBYID', category);
 
       if (category.properties) {
         for (const [key, value] of Object.entries<String[]>(
@@ -67,6 +67,7 @@ export async function fetchCategoryById(id: string) {
           });
         }
       }
+      console.log('FORMATED PROPRIETIS', propertiesFormatted);
       const k = {
         id: category._id.toString(),
         name: category.name,
