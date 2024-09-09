@@ -463,7 +463,102 @@ export async function addProduct(data: finalSubmission) {
 
     // Check and update category properties
     let categoryUpdated = false;
-    console.log('proprietati  ', productData.properties);
+    const categoryProperties = category.properties || {};
+
+    // Normalize category property keys and their values to lowercase for comparison
+    /*const normalizedCategoryProperties: Record<string, string[]> =
+      Object.fromEntries(
+        Object.entries(categoryProperties).map(
+          ([key, values]: [key: string, values: any]) => [
+            key.toLowerCase(), // Convert key to lowercase
+            Array(values.map((value: string) => value.toLowerCase())), // Convert values to lowercase and use Set for fast lookups
+          ]
+        )
+      );*/
+
+    // Normalize category property keys and their values to lowercase for comparison
+    const normalizedCategoryProperties: Record<string, string[]> =
+      Object.fromEntries(
+        Object.entries(categoryProperties).map(
+          ([key, values]: [string, any]) => [
+            key.toLowerCase(), // Convert key to lowercase
+            (values as string[]).map((value) => value.toLowerCase()), // Convert each value to lowercase and use an array
+          ]
+        )
+      );
+
+    console.log('NORMALIZE WORKS::::::::::::::::::::::::::::');
+    console.log(normalizedCategoryProperties);
+
+    const keys: Record<string, string> = Object.fromEntries(
+      Object.entries(categoryProperties).map(([key, _]: [string, any]) => [
+        key.toLowerCase(), // Convert key to lowercase
+        key, // Convert values to lowercase and use Set for fast lookups
+      ])
+    );
+
+    console.log('KEY WORKS::::::::::::::::::::::::::::');
+    console.log(keys);
+    const copyProductProperties = productData.properties;
+
+    for (const [property, values] of Object.entries(productData.properties)) {
+      const normalizedProperty = property.toLowerCase(); // Convert property to lowercase
+
+      if (!normalizedCategoryProperties[normalizedProperty]) {
+        // If the property is missing (case-insensitively), add it to the category
+        categoryProperties[property] = [
+          ...new Set(values.map((value) => value)),
+        ];
+        categoryUpdated = true;
+      } else {
+        // If the property exists, check for missing values
+        const originalKey = keys[normalizedProperty];
+        delete copyProductProperties[property];
+        copyProductProperties[originalKey] = [];
+        /*if (property !== originalKey) {
+          delete copyProductProperties[property];
+          copyProductProperties[originalKey] = [];
+        }*/
+        /*const existingValuesSet =
+          normalizedCategoryProperties[normalizedProperty];
+        const missingValues = values.filter(
+          (value) => !existingValuesSet.has(value.toLowerCase()) // Convert values to lowercase for comparison
+        );*/
+
+        values.forEach((v) => {
+          //if(categoryProperties[originalKey].findIndex)
+          const loweredValue = v.toLowerCase();
+          const idx = normalizedCategoryProperties[
+            normalizedProperty
+          ].findIndex((value) => {
+            return value.toLowerCase() === loweredValue;
+          });
+          if (idx !== -1) {
+            copyProductProperties[originalKey].push(
+              categoryProperties[originalKey].at(idx)
+            );
+          } else {
+            categoryProperties[originalKey].push(v);
+            copyProductProperties[originalKey].push(v);
+            categoryUpdated = true;
+          }
+        });
+
+        /*if (missingValues.length > 0) {
+          // Add missing values to the category property
+          categoryProperties[property].push(
+            ...missingValues.map((value) => value)
+          );
+          categoryProperties[property] = [
+            ...new Set(categoryProperties[property]),
+          ];
+          categoryUpdated = true;
+
+        }*/
+      }
+    }
+
+    /*console.log('proprietati  ', productData.properties);
     for (const [property, values] of Object.entries(productData.properties)) {
       console.log('PROPERTY - ', property, ' VALUE - ', values);
       if (!category.properties) {
@@ -471,6 +566,7 @@ export async function addProduct(data: finalSubmission) {
       }
       if (!category.properties[property]) {
         // If the property is missing, add it to the category
+
         category.properties[property] = [...new Set(values)]; // Convert Set to array
         categoryUpdated = true;
       } else {
@@ -488,19 +584,25 @@ export async function addProduct(data: finalSubmission) {
           categoryUpdated = true;
         }
       }
-    }
+    }*/
 
     // Update the category if it was modified
     if (categoryUpdated) {
       console.log('CATEGORY    IN UPDATEEE::: ');
       console.log(category);
+
       await categoryCollection.updateOne(
         { _id: categoryId },
-        { $set: { properties: category.properties } },
+        { $set: { properties: categoryProperties } },
         { session }
       );
     }
 
+    console.log('PROPERTIES: ');
+    console.log({ categoryProperties }, { copyProductProperties });
+    console.log('====================================================');
+
+    productData.properties = copyProductProperties;
     // Save the new product
     await productsCollection.insertOne(productData, { session });
 
