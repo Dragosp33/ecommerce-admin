@@ -69,7 +69,7 @@ export default function Nav() {
         </div>
         <nav className='flex flex-col gap-2'>
           <Link
-            href={'/'}
+            href={'/dashboard'}
             className={pathname === '/dashboard' ? activeLink : inactiveLink}
             onClick={() => {
               if (show) {
@@ -84,7 +84,7 @@ export default function Nav() {
               viewBox='0 0 24 24'
               strokeWidth={1.5}
               stroke='currentColor'
-              className={pathname === '/' ? activeIcon : inactiveIcon}
+              className={pathname === '/dashboard' ? activeIcon : inactiveIcon}
             >
               <path
                 strokeLinecap='round'
