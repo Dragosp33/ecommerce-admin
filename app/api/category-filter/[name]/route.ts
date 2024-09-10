@@ -24,6 +24,8 @@ export async function GET(
   // Merge properties
   const mergedProperties: Record<string, Set<string>> = {};
 
+  let catPath = '';
+
   categories.forEach((cat) => {
     // Type assertion to specify the type of cat.properties
     Object.entries(cat.properties).forEach(([key, values]: [string, any]) => {
@@ -32,6 +34,9 @@ export async function GET(
       }
       values.forEach((value: string) => mergedProperties[key].add(value));
     });
+    if (cat.name === name) {
+      catPath = cat.path;
+    }
   });
 
   // Convert Set to Array
@@ -42,5 +47,5 @@ export async function GET(
     ])
   );
 
-  return NextResponse.json({ properties: resultProperties });
+  return NextResponse.json({ properties: resultProperties, path: catPath });
 }
