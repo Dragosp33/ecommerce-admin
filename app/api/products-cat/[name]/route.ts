@@ -11,7 +11,8 @@ export async function GET(
   const searchParams = req.nextUrl.searchParams;
 
   console.log('SEARCH PARAMS IN API ::::: ', searchParams);
-
+  // await new Promise((resolve) => setTimeout(resolve, 3000));
+  //console.log('WAITED FOR 3 SECONDS');
   // Initialize filters object
   const filters: Record<string, string[]> = {};
 
@@ -92,10 +93,14 @@ export async function GET(
       {
         $unwind: '$matchedVariants', // Unwind to return each matched variant as a separate document
       },
+      { $limit: 10 },
     ])
     .toArray();
 
-  console.log(products);
+  //console.log(products);
+  /*  return NextResponse.json({
+    ...products.map((product: any) => product.matchedVariants),
+  }); */
   return NextResponse.json({
     matchedVariants: products.map((product) => product.matchedVariants),
   });

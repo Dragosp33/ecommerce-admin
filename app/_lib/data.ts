@@ -303,6 +303,7 @@ export async function getCategoryTree() {
         (child) => child.parent?._id.toString() === category._id.toString()
       ),
     }));
+    console.log('TRANSFORMED CATEGORIES IN CAT TREE', transformedCategories);
     return transformedCategories;
   }
   return [];
