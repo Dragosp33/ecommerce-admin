@@ -3,6 +3,8 @@ import clientPromise from './mongodb';
 import { formatCurrency } from './utils';
 import { Revenue } from './definitions';
 
+const ITEMS_PER_PAGE = 5;
+
 export async function fetchCardData() {
   unstable_noStore();
   try {
@@ -229,4 +231,79 @@ export async function fetchLatestInvoices() {
     console.error('Error fetching latest invoices:', error);
     return [];
   }
+}
+
+export async function fetchOrdersPages(query: string) {
+  try {
+    const client = await clientPromise;
+    const db = client.db(); // Use your database name
+
+    const count = await db.collection('orders').countDocuments({
+      /* userId: { $regex: query, $options: 'i' },
+       $or: [
+        { userId: { $regex: query, $options: 'i' } },
+
+        /* { 'parentCategory': { $regex: query, $options: 'i' } },
+          { 'invoices.amount': { $regex: query, $options: 'i' } },
+          { 'invoices.date': { $regex: query, $options: 'i' } },
+          { 'invoices.status': { $regex: query, $options: 'i' } },
+      ],*/
+    });
+
+    console.log('COUNT IS::::::::', count);
+
+    const totalPages = Math.ceil(count / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of categories.');
+  }
+}
+
+export async function fetchAllOrders(currentPage: number | string) {
+  unstable_noStore();
+  const client = await clientPromise;
+  const db = client.db();
+  // const productsCollection = db.collection('products');
+  const ordersWithUserDetails = await db
+    .collection('orders')
+    .aggregate([
+      {
+        // Match orders based on userId (if needed)
+        $match: {
+          // Example: Filter by a specific userId
+          // userId: new ObjectId(userId)
+        },
+      },
+      {
+        // Join the orders collection with the users collection
+        $lookup: {
+          from: 'users', // Name of the users collection
+          localField: 'userId', // Field from orders collection
+          foreignField: '_id', // Field from users collection
+          as: 'userInfo', // Output array field
+        },
+      },
+      {
+        // Unwind the userDetails array to convert it into objects
+        $unwind: '$userInfo',
+      },
+      { $skip: (Number(currentPage) - 1) * ITEMS_PER_PAGE },
+      { $limit: ITEMS_PER_PAGE },
+      {
+        // Project to select the fields you need
+        $project: {
+          _id: 1, // Include order id
+          createdAt: 1, // Example: Include order date
+          amountSubTotal: 1, // Example: Include total amount
+          status: 1,
+          'userInfo.name': 1,
+          'userInfo.email': 1,
+          'userInfo.image': 1,
+        },
+      },
+    ])
+    .toArray();
+
+  return ordersWithUserDetails;
 }

@@ -529,3 +529,19 @@ export async function fetchFeaturedProduct() {
   console.log(featuredVariant[0]); // If you expect only one featured variant
   return replaceIdDoc(featuredVariant[0]);
 }
+
+export async function getProductById(id: string) {
+  if (!id) {
+    return null;
+  }
+  unstable_noStore();
+  try {
+    const client = await clientPromise;
+    const db = client.db().collection('products');
+
+    const product = await db.findOne({ _id: new mongoose.Types.ObjectId(id) });
+    return product;
+  } catch {
+    return null;
+  }
+}

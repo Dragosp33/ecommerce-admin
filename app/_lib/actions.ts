@@ -687,3 +687,23 @@ export async function EditProduct(id: String, data: finalSubmission) {
   /*revalidatePath('/dashboard/products');
   redirect('/dashboard/products');*/
 }
+
+export async function ReplaceFeaturedProduct(SKU: string, id: string) {
+  const client = await clientPromise; // Assume clientPromise is the MongoDB client connection
+  const db = client.db();
+
+  // Step 1: Unset the existing featured variant
+  await db.collection('products').updateOne(
+    { 'variants.featured': true }, // Find the product with the currently featured variant
+    { $set: { 'variants.$[elem].featured': false } }, // Unset the `featured` flag for that variant
+    { arrayFilters: [{ 'elem.featured': true }] } // Use arrayFilters to target only the featured variant
+  );
+
+  // Step 2: Set the new variant as featured
+  await db.collection('products').updateOne(
+    { _id: new mongoose.Types.ObjectId(id), 'variants.SKU': SKU }, // Find the product by id and the variant by SKU
+    { $set: { 'variants.$.featured': true } } // Set the `featured` flag for the matching variant
+  );
+  revalidatePath(`/dashboard/products/${id}`);
+  redirect(`/dashboard/products/${id}`);
+}

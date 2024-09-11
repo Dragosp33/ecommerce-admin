@@ -135,7 +135,14 @@ export async function fetchSingleProduct2(id: string) {
   return;
 }
 
-async function getBestSellersInfo() {
+export async function getBestSellersInfo(
+  limit?: string | number | null | undefined
+) {
+  unstable_noStore();
+  let apiLimit = 5;
+  if (limit) {
+    apiLimit = Number(apiLimit) || 5;
+  }
   const client = await clientPromise;
   const db = client.db(); // Use your database name
 
@@ -160,7 +167,7 @@ async function getBestSellersInfo() {
       { $sort: { totalSold: -1 } },
 
       // Optionally, limit the results to top N most sold SKUs
-      { $limit: 10 }, // Replace 10 with the desired number of results
+      { $limit: apiLimit }, // Replace 10 with the desired number of results
 
       // Lookup the variant information from the products collection
       {
@@ -199,4 +206,5 @@ async function getBestSellersInfo() {
     .toArray();
 
   console.log(k);
+  return k;
 }

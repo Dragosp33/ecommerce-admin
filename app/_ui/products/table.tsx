@@ -59,7 +59,7 @@ export default async function ProductsTable({
                   </div>
                   <div>
                     <Link
-                      href={`/dashboard/products/${product.id}/variants`}
+                      href={`/dashboard/products/${product.id}`}
                       className='no-underline hover:underline text-sky-600'
                     >
                       {' '}
@@ -82,13 +82,6 @@ export default async function ProductsTable({
                 <th scope='col' className='px-3 py-5 font-medium'>
                   Variants
                 </th>
-                {/* }
-                <th scope='col' className='px-3 py-5 font-medium'>
-                  Date
-                </th>
-                <th scope='col' className='px-3 py-5 font-medium'>
-                  Status
-                </th> */}
                 <th scope='col' className='relative py-3 pl-6 pr-3'>
                   <span className='sr-only'>Edit</span>
                 </th>
@@ -121,7 +114,7 @@ export default async function ProductsTable({
                   </td>
                   <td className='whitespace-nowrap py-3 pl-6 pr-3'>
                     <Link
-                      href={`/dashboard/products/${product.id}/variants`}
+                      href={`/dashboard/products/${product.id}`}
                       className='hover:text-sky-400'
                     >
                       <EyeIcon className='w-5 ' />
