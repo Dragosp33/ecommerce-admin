@@ -40,6 +40,7 @@ export async function GET(
         );
         if (cat.name === name) {
           catPath = cat.path;
+          //xxx
         }
       });
 
@@ -51,7 +52,10 @@ export async function GET(
         ])
       );
     }
-
+    console.log({
+      properties: resultProperties,
+      path: catPath,
+    });
     return NextResponse.json({ properties: resultProperties, path: catPath });
   } catch (error) {
     console.log(error);
