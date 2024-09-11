@@ -38,10 +38,6 @@ export async function GET(
             values.forEach((value: string) => mergedProperties[key].add(value));
           }
         );
-        if (cat.name === name) {
-          catPath = cat.path;
-          //xxx
-        }
       });
 
       // Convert Set to Array
@@ -51,6 +47,8 @@ export async function GET(
           Array.from(values),
         ])
       );
+    } else {
+      catPath = categories[0].path;
     }
     console.log({
       properties: resultProperties,
