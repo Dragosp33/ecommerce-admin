@@ -9,43 +9,52 @@ export async function GET(
 ) {
   const { name } = params;
   // Connect to MongoDB
-  const client = await clientPromise;
-  const db = client.db();
-  const categories = await db
-    .collection('categories')
-    .find({
-      $or: [
-        { name: name }, // Include the selected category
-        { path: { $regex: `,${name},` } }, // Match categories whose path includes the selected category's ID
-      ],
-    })
-    .toArray();
+  try {
+    const client = await clientPromise;
+    const db = client.db();
+    const categories = await db
+      .collection('categories')
+      .find({
+        $or: [
+          { name: name }, // Include the selected category
+          { path: { $regex: `,${name},` } }, // Match categories whose path includes the selected category's ID
+        ],
+      })
+      .toArray();
 
-  // Merge properties
-  const mergedProperties: Record<string, Set<string>> = {};
+    // Merge properties
+    const mergedProperties: Record<string, Set<string>> = {};
+    let resultProperties = categories[0].properties;
+    let catPath = '';
 
-  let catPath = '';
+    if (categories.length > 1) {
+      categories.forEach((cat) => {
+        // Type assertion to specify the type of cat.properties
+        Object.entries(cat.properties).forEach(
+          ([key, values]: [string, any]) => {
+            if (!mergedProperties[key]) {
+              mergedProperties[key] = new Set<string>();
+            }
+            values.forEach((value: string) => mergedProperties[key].add(value));
+          }
+        );
+        if (cat.name === name) {
+          catPath = cat.path;
+        }
+      });
 
-  categories.forEach((cat) => {
-    // Type assertion to specify the type of cat.properties
-    Object.entries(cat.properties).forEach(([key, values]: [string, any]) => {
-      if (!mergedProperties[key]) {
-        mergedProperties[key] = new Set<string>();
-      }
-      values.forEach((value: string) => mergedProperties[key].add(value));
-    });
-    if (cat.name === name) {
-      catPath = cat.path;
+      // Convert Set to Array
+      resultProperties = Object.fromEntries(
+        Object.entries(mergedProperties).map(([key, values]) => [
+          key,
+          Array.from(values),
+        ])
+      );
     }
-  });
 
-  // Convert Set to Array
-  const resultProperties = Object.fromEntries(
-    Object.entries(mergedProperties).map(([key, values]) => [
-      key,
-      Array.from(values),
-    ])
-  );
-
-  return NextResponse.json({ properties: resultProperties, path: catPath });
+    return NextResponse.json({ properties: resultProperties, path: catPath });
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json({ error: error }, { status: 404 });
+  }
 }

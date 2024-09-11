@@ -94,7 +94,7 @@ export default async function InvoicesTable({
                       {invoice.userInfo.image ? (
                         <>
                           <Image
-                            src={invoice.image_url}
+                            src={invoice.userInfo.image}
                             className='mr-2 rounded-full'
                             width={28}
                             height={28}
