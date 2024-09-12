@@ -1,4 +1,3 @@
-import { fetchLatestInvoices, fetchRevenue } from '@/app/_lib/data-orders';
 import CardWrapper from '@/app/_ui/dashboard/cards';
 import LatestInvoices from '@/app/_ui/dashboard/latest-invoices';
 import RevenueChart from '@/app/_ui/dashboard/revenue-chart';
@@ -10,12 +9,7 @@ import {
 } from '@/app/_ui/skeletons/skeletons';
 import React, { Suspense } from 'react';
 
-/*const page = async () => {
-  const data = await fetchCardData();
-  console.log('DATA', data);*/
 export default async function Page() {
-  //await getOrdersByMonth();
-  //await fetchLatestInvoices();
   return (
     <main>
       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>

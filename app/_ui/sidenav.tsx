@@ -24,7 +24,6 @@ export default function Nav() {
     }
   };
 
-  console.log('rerender: show is  ', show);
   return (
     <div>
       <div className='block md:hidden flex items-center p-4'>
