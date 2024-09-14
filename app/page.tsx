@@ -20,14 +20,14 @@ export default function Page() {
             <strong>Welcome to DPC. </strong> This is the admin portal for
             <a
               href={`${process.env.NEXT_PUBLIC_AUTH_URL}`}
-              className='text-blue-500 mr-2'
+              className='text-blue-500 mr-2 ml-2'
               aria-disabled
             >
-              a Nextjs ecommerce web app
+              ShopShift, a web e-commerce platform.
             </a>
           </p>
           <Link
-            href={`${process.env.NEXT_PUBLIC_AUTH_URL}/auth/login?callbackUrl=${process.env.NEXT_PUBLIC_INTERNAL_URL}`}
+            href={`${process.env.NEXT_PUBLIC_AUTH_URL}/auth/login?callbackUrl=${process.env.NEXT_PUBLIC_INTERNAL_URL}/dashboard`}
             className='flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base'
           >
             <span>Log in</span> <ArrowRightIcon className='w-5 md:w-6' />
