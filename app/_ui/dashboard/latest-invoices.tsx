@@ -11,6 +11,7 @@ export default async function LatestInvoices() {
   // Format the date and time
   const formattedDate = now.toLocaleDateString(); // Formats to "9/10/2024" (for example)
   const formattedTime = now.toLocaleTimeString();
+  //console.log('latest invoices ', latestInvoices);
   return (
     <div className='flex w-full flex-col md:col-span-4'>
       <h2 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
@@ -34,7 +35,7 @@ export default async function LatestInvoices() {
                 <div className='flex items-center'>
                   {invoice.userInfo.image ? (
                     <Image
-                      src={invoice.userInfo.image_url}
+                      src={invoice.userInfo.image}
                       alt={`${invoice.userInfo.name}'s profile picture`}
                       className='mr-4 rounded-full'
                       width={32}
