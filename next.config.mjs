@@ -35,6 +35,12 @@ const nextConfig = {
         hostname: 'photobucket333.s3.eu-west-3.amazonaws.com',
         port: '',
       },
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+        port: '',
+        pathname: '**',
+      },
     ],
   },
 };
