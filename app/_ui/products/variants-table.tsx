@@ -44,14 +44,22 @@ export default function variantsTable({
                     <p className='text-lg font-medium'>{variant.title}</p>
                   </div>
                   <div className='flex justify-end gap-2'>
-                    {/*<UpdateInvoice id={product.id} />
-                    <DeleteInvoice id={product.id} /> 
-                    <UpdateElement
-                      link={`/dashboard/products/${product.id}/edit`}
-                      id={product.id.toString()}
-                    />
-                    <AlertButton product={product} />*/}
-                    aici buton
+                    {variant.featured ? (
+                      <div
+                        className={`${lusitana.className} bg-violet-500 text-white p-2 text-sm rounded-lg`}
+                      >
+                        {' '}
+                        featured{' '}
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={() =>
+                          ReplaceFeaturedProduct(variant.SKU, productId)
+                        }
+                      >
+                        feat this
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <div className='flex w-full items-center justify-between pt-4'>
