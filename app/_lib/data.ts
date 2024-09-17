@@ -289,6 +289,7 @@ export async function getItemsBasedOnCategory(name: string) {
 }
 
 export async function getCategoryTree() {
+  unstable_noStore();
   if (process.env.MONGODB_URI) {
     // try here
 
