@@ -77,3 +77,46 @@ export function replaceIdDoc(doc: mongoose.mongo.BSON.Document | null) {
   delete doc._id;
   return doc;
 }
+
+interface CategoryItem {
+  name: string;
+  id: string;
+  path: string | null;
+  parent: string | null;
+}
+
+interface TreeNode {
+  id: string;
+  name: string;
+  children: TreeNode[];
+}
+
+/**
+ * Utility function to transform Categories into a disconnected Graph
+ * Containing trees for each main category. Each Main category = root of the tree.
+ * @param items - Array of Categories from MongoDB
+ * @returns - Array of TreeNodes - Main categories and their tree
+ */
+export function buildTree(items: CategoryItem[]): TreeNode[] {
+  const map: { [key: string]: TreeNode } = {};
+  const roots: TreeNode[] = [];
+
+  // Map each item by id and add a `children` array
+
+  items.forEach((item: CategoryItem) => {
+    map[item.id] = { name: item.name, id: item.id, children: [] };
+  });
+
+  // Link each item to its parent or add it as a root
+  items.forEach((item) => {
+    if (item.parent === null) {
+      roots.push(map[item.id]);
+    } else {
+      const x = map[item.parent];
+      map[item.parent].children.push(map[item.id]);
+    }
+  });
+
+  //console.log(JSON.stringify(roots, null, 2));
+  return roots;
+}

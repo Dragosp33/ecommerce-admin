@@ -5,7 +5,7 @@ import { deleteOneProduct } from '@/app/_lib/actions';
 import { TrashIcon } from '@heroicons/react/24/outline';
 
 function AlertButton({ swal, product }: { swal: any; product: Product }) {
-  console.log('category: ', product);
+  //console.log('productInDeleteButton: ', product);
   function handleClick() {
     swal
       .fire({

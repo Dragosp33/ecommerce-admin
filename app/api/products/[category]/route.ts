@@ -92,7 +92,6 @@ export async function GET(
     ])
     .toArray();
 
-  //console.log(p.map(p));
   return Response.json({
     matchedVariants: p.map((product) => product.matchedVariants),
   });

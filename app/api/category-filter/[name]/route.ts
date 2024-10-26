@@ -8,6 +8,7 @@ export async function GET(
   { params }: { params: { name: string } }
 ) {
   const { name } = params;
+  //console.log(name);
   // Connect to MongoDB
   try {
     const client = await clientPromise;
@@ -25,12 +26,13 @@ export async function GET(
     // Merge properties
     const mergedProperties: Record<string, Set<string>> = {};
     let resultProperties = categories[0].properties;
-    let catPath = '';
+    let catPath = categories[0].path || '';
 
     if (categories.length > 1) {
       categories.forEach((cat) => {
+        //console.log('Cat: ', cat);
         // Type assertion to specify the type of cat.properties
-        Object.entries(cat.properties).forEach(
+        Object.entries(cat.properties || []).forEach(
           ([key, values]: [string, any]) => {
             if (!mergedProperties[key]) {
               mergedProperties[key] = new Set<string>();
@@ -50,10 +52,10 @@ export async function GET(
     } else {
       catPath = categories[0].path;
     }
-    console.log({
+    /*console.log({
       properties: resultProperties,
       path: catPath,
-    });
+    });*/
     return NextResponse.json({ properties: resultProperties, path: catPath });
   } catch (error) {
     console.log(error);

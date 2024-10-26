@@ -3,13 +3,6 @@ import { ObjectId } from 'mongodb';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextRequest } from 'next/server';
 
-/*export async function GET(
-  request: Request,
-  { params }: { params: { slug: string } }
-) {
-  const slug = params.slug; // 'a', 'b', or 'c'
-}*/
-
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }

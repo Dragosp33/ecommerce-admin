@@ -19,7 +19,7 @@ export default function DropDownClient({
     <div className='w-full p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-2 md:p-2 mb-3'>
       <button onClick={collapse}> {title} </button>
       <div
-        className='transition-all duration-1000 collapse-dropdown'
+        className='transition-all duration-500 collapse-dropdown'
         ref={collapseRef}
         style={{ maxHeight: '1000px' }}
       >

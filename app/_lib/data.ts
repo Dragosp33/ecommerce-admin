@@ -4,7 +4,7 @@ import { Category, CategoryField, Product } from '@/app/_lib/definitions';
 import mongoose from 'mongoose';
 import { CategoryModel } from '@/models/Category';
 import { ProductModel } from '@/models/Product';
-import { replaceIdDoc } from './utils';
+import { buildTree, replaceIdDoc } from './utils';
 
 const ITEMS_PER_PAGE = 3;
 /**
@@ -155,18 +155,6 @@ export async function fetchCategoriesPages(query: string) {
   }
 }
 
-export async function isAdmin(email: string) {
-  const client = await clientPromise;
-  const db = client.db(); // Use your database name
-
-  // Assuming you have an "invoices" collection
-  const userinfo = await db.collection('userinfos').findOne({ email: email });
-  if (!userinfo || !userinfo.admin) {
-    return false;
-  }
-  return true;
-}
-
 export async function fetchAllCategories() {
   unstable_noStore();
   try {
@@ -183,45 +171,6 @@ export async function fetchAllCategories() {
     return formattedCategories;
   } catch (error) {
     console.log(error);
-    return [];
-  }
-}
-
-interface HierarchicalCategory {
-  id: string;
-  name: string;
-  parent?: HierarchicalCategory;
-  subcategories: HierarchicalCategory[];
-}
-
-function buildTree(category: any): any {
-  const newNode: any = {
-    id: category._id.toString(),
-    name: category.name,
-    subcategories: [],
-  };
-
-  if (category.parent) {
-    newNode.subcategories.push(buildTree(category.parent));
-  }
-
-  return newNode;
-}
-
-async function filterCategories(): Promise<any[]> {
-  try {
-    const categories = await CategoryModel.find({}).lean(); // Retrieve all categories
-
-    // Define a recursive function to build the hierarchical tree
-
-    const filteredCategories = categories
-      .filter((category: any) => category.parent) // Filter out root categories
-      .map(buildTree); // Build the hierarchical tree for each category
-
-    console.log(filteredCategories); // Adjust output as needed
-    return filteredCategories;
-  } catch (error) {
-    console.error('Error filtering categories:', error);
     return [];
   }
 }
@@ -288,6 +237,10 @@ export async function getItemsBasedOnCategory(name: string) {
   return x;
 }
 
+/**
+ *
+ * @returns an array of trees based on categories, where each main category is a root.
+ */
 export async function getCategoryTree() {
   unstable_noStore();
   if (process.env.MONGODB_URI) {
@@ -297,6 +250,8 @@ export async function getCategoryTree() {
     // Fetch categories from MongoDB (customize this query as needed)
     const categories = await CategoryModel.find({}).exec();
 
+    /*console.log('CATEGORIES: ', categories);
+
     // Transform data into a nested structure (parse path, link parent-child)
     const transformedCategories = categories.map((category) => ({
       ...category.toObject(),
@@ -304,8 +259,18 @@ export async function getCategoryTree() {
         (child) => child.parent?._id.toString() === category._id.toString()
       ),
     }));
-    console.log('TRANSFORMED CATEGORIES IN CAT TREE', transformedCategories);
-    return transformedCategories;
+    console.log('TRANSFORMED CATEGORIES IN CAT TREE', transformedCategories);*/
+
+    const plainItems = categories.map((item) => ({
+      ...item.toObject(),
+      id: item._id.toString(),
+      _id: undefined,
+      parent: item.parent?.toString() || null,
+    }));
+    const categoryTree = buildTree(plainItems);
+    //console.log(categoryTree);
+
+    return categoryTree;
   }
   return [];
 }
@@ -407,7 +372,7 @@ export async function fetchFilteredProducts(
       .sort('name')
       .skip((currentPage - 1) * ITEMS_PER_PAGE)
       .limit(ITEMS_PER_PAGE);
-    console.log('categories::: ', products);
+    console.log('products::: ', products);
     //console.log('tojson start:');
     const ret: Product[] = products.map((k) => JSON.parse(JSON.stringify(k)));
     // categories.forEach((k) => console.log(k.toJSON()));
@@ -475,7 +440,7 @@ export async function fetchFilteredProducts2(
         title: item.title,
         category: {
           name: item.category.name,
-          parent: item.category.parent.toString(),
+          parent: item.category.parent?.toString(),
           properties: item.properties,
           path: item.path,
           id: item.category._id.toString(),
@@ -493,7 +458,7 @@ export async function fetchFilteredProducts2(
         .skip((currentPage - 1) * ITEMS_PER_PAGE)
         .limit(ITEMS_PER_PAGE);
     }
-    console.log('products::: ', products);
+    //console.log('products::: ', products);
     const ret: Product[] = products.map((k) => JSON.parse(JSON.stringify(k)));
     return ret;
   }

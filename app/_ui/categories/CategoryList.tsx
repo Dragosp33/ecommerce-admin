@@ -11,8 +11,8 @@ const CategoryList = ({
   const inactiveLink = 'flex gap-1 p-1';
   const activeLink = inactiveLink + ' bg-highlight text-black rounded-sm';
   categories.forEach((cat) => {
-    console.log('FOR CATEGORY: ', cat.name);
-    console.log(cat, cat.children);
+    console.log('FOR CATEGORY: ', cat);
+    //console.log(cat, cat.children);
   });
   const renderCategory = (category: any) => {
     //console.log(category);
@@ -33,12 +33,8 @@ const CategoryList = ({
         {category && category.children && (
           <ul>
             {category.children.map((child: any) => (
-              <div key={child._id} className='ml-5'>
-                {renderCategory(
-                  categories.find(
-                    (x) => x._id.toString() === child._id.toString()
-                  )
-                )}{' '}
+              <div key={child.id} className='ml-5'>
+                {renderCategory(child)}{' '}
               </div>
             ))}
           </ul>
@@ -49,11 +45,9 @@ const CategoryList = ({
 
   return (
     <ul>
-      {categories.map((category) =>
-        category.path === null ? (
-          <li key={category._id.toString()}>{renderCategory(category)}</li>
-        ) : null
-      )}
+      {categories.map((category) => (
+        <li key={category.id}>{renderCategory(category)}</li>
+      ))}
     </ul>
   );
 };

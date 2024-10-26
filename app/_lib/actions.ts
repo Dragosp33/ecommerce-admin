@@ -427,6 +427,16 @@ export async function CreateProduct(data: finalSubmission) {
   redirect('/dashboard/products');
 }
 
+/**
+ * Function to add a product to the database. It also updates the category properties if needed,
+ * or modify the properties input of the product. For example, if the product has
+ * `color:Blue` , but the category had `Color:BLUE`, then the product property will be set to `Color:BLUE`.
+ *
+ * Otherwise, if the category doesn't have the property `color` or the value `Blue` present,
+ * the property with the respective value (`color:Blue`) will be added to the category.
+ * @param data - finalSubmission - product data, including name, categoryId, properties and variants.
+ * @returns
+ */
 export async function addProduct(data: finalSubmission) {
   const result = variantFormSchema.safeParse(data);
   if (!result.success) {
@@ -466,17 +476,6 @@ export async function addProduct(data: finalSubmission) {
     const categoryProperties = category.properties || {};
 
     // Normalize category property keys and their values to lowercase for comparison
-    /*const normalizedCategoryProperties: Record<string, string[]> =
-      Object.fromEntries(
-        Object.entries(categoryProperties).map(
-          ([key, values]: [key: string, values: any]) => [
-            key.toLowerCase(), // Convert key to lowercase
-            Array(values.map((value: string) => value.toLowerCase())), // Convert values to lowercase and use Set for fast lookups
-          ]
-        )
-      );*/
-
-    // Normalize category property keys and their values to lowercase for comparison
     const normalizedCategoryProperties: Record<string, string[]> =
       Object.fromEntries(
         Object.entries(categoryProperties).map(
@@ -487,8 +486,8 @@ export async function addProduct(data: finalSubmission) {
         )
       );
 
-    console.log('NORMALIZE WORKS::::::::::::::::::::::::::::');
-    console.log(normalizedCategoryProperties);
+    /*console.log('NORMALIZE WORKS::::::::::::::::::::::::::::');
+    console.log(normalizedCategoryProperties);*/
 
     const keys: Record<string, string> = Object.fromEntries(
       Object.entries(categoryProperties).map(([key, _]: [string, any]) => [
@@ -497,8 +496,8 @@ export async function addProduct(data: finalSubmission) {
       ])
     );
 
-    console.log('KEY WORKS::::::::::::::::::::::::::::');
-    console.log(keys);
+    /*console.log('KEY WORKS::::::::::::::::::::::::::::');
+    console.log(keys);*/
     const copyProductProperties = productData.properties;
 
     for (const [property, values] of Object.entries(productData.properties)) {
@@ -515,15 +514,6 @@ export async function addProduct(data: finalSubmission) {
         const originalKey = keys[normalizedProperty];
         delete copyProductProperties[property];
         copyProductProperties[originalKey] = [];
-        /*if (property !== originalKey) {
-          delete copyProductProperties[property];
-          copyProductProperties[originalKey] = [];
-        }*/
-        /*const existingValuesSet =
-          normalizedCategoryProperties[normalizedProperty];
-        const missingValues = values.filter(
-          (value) => !existingValuesSet.has(value.toLowerCase()) // Convert values to lowercase for comparison
-        );*/
 
         values.forEach((v) => {
           //if(categoryProperties[originalKey].findIndex)
@@ -543,53 +533,13 @@ export async function addProduct(data: finalSubmission) {
             categoryUpdated = true;
           }
         });
-
-        /*if (missingValues.length > 0) {
-          // Add missing values to the category property
-          categoryProperties[property].push(
-            ...missingValues.map((value) => value)
-          );
-          categoryProperties[property] = [
-            ...new Set(categoryProperties[property]),
-          ];
-          categoryUpdated = true;
-
-        }*/
       }
     }
 
-    /*console.log('proprietati  ', productData.properties);
-    for (const [property, values] of Object.entries(productData.properties)) {
-      console.log('PROPERTY - ', property, ' VALUE - ', values);
-      if (!category.properties) {
-        category.properties = {};
-      }
-      if (!category.properties[property]) {
-        // If the property is missing, add it to the category
-
-        category.properties[property] = [...new Set(values)]; // Convert Set to array
-        categoryUpdated = true;
-      } else {
-        // If the property exists, check for missing values
-        const missingValues = values.filter(
-          (value) => !category.properties[property].includes(value)
-        );
-
-        if (missingValues.length > 0) {
-          // Add missing values to the category property
-          category.properties[property].push(...missingValues);
-          category.properties[property] = [
-            ...new Set(category.properties[property]),
-          ];
-          categoryUpdated = true;
-        }
-      }
-    }*/
-
     // Update the category if it was modified
     if (categoryUpdated) {
-      console.log('CATEGORY    IN UPDATEEE::: ');
-      console.log(category);
+      //console.log('CATEGORY    IN UPDATEEE::: ');
+      //console.log(category);
 
       await categoryCollection.updateOne(
         { _id: categoryId },
@@ -627,13 +577,7 @@ export async function addProduct(data: finalSubmission) {
         (x) => x.SKU === duplicateSKU
       );
       console.log('INDEX FOUND: ', index);
-      /*const k = new CustomError(
-        index,
-        `SKU-duplicate`,
-        `variants.${index}.SKU`
-      );
-      console.log(k);*/
-      //throw new Error('SKU-duplicate', { cause: 0 });
+
       throw new Error(
         JSON.stringify({ message: 'SKU-duplicate', index: index })
       );
@@ -642,8 +586,6 @@ export async function addProduct(data: finalSubmission) {
     session.endSession();
   }
 }
-//revalidatePath('/dashboard/products');
-//redirect('/dashboard/products');
 
 /**
  * Deletes one product including all its variants from the database.

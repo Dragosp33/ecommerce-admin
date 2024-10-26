@@ -6,6 +6,7 @@ import AlertButton from '@/app/_ui/products/alert-button';
 import { Product } from '@/app/_lib/definitions';
 import Link from 'next/link';
 import { EyeIcon } from '@heroicons/react/24/outline';
+import { headers } from 'next/headers';
 
 export default async function ProductsTable({
   query,
@@ -16,12 +17,30 @@ export default async function ProductsTable({
   currentPage: number;
   category?: string;
 }) {
-  const products: Product[] = await fetchFilteredProducts2(
+  /*const products: Product[] = await fetchFilteredProducts2(
     query,
     currentPage,
     category
-  );
-  console.log('filtered: ', products);
+  );*/
+  const params = new URLSearchParams();
+  if (query) params.append('query', query);
+  if (currentPage) params.append('page', currentPage.toString());
+  if (category) params.append('category', category);
+
+  const cookie = headers().get('cookie') || '';
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_INTERNAL_URL || 'http://shop.admin.localhost:3000';
+  const res = await fetch(`${baseUrl}/api/products?${params.toString()}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      Cookie: cookie,
+    },
+    cache: 'no-store',
+  });
+  const products: Product[] = await res.json();
+  //console.log('filtered: ', products);
 
   return (
     <div className='mt-6 flow-root'>
