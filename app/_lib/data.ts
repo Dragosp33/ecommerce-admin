@@ -492,7 +492,7 @@ export async function fetchFeaturedProduct() {
     .toArray();
 
   // Now `featuredVariant` contains an array with the featured variant(s)
-  console.log(featuredVariant[0]); // If you expect only one featured variant
+  //console.log(featuredVariant[0]); // If you expect only one featured variant
   return replaceIdDoc(featuredVariant[0]);
 }
 

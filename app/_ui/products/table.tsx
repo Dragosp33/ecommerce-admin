@@ -59,8 +59,6 @@ export default async function ProductsTable({
                     </div>
                   </div>
                   <div className='flex justify-end gap-2'>
-                    {/*<UpdateInvoice id={product.id} />
-                    <DeleteInvoice id={product.id} /> */}
                     <UpdateElement
                       link={`/dashboard/products/${product.id}/edit`}
                       id={product.id.toString()}
