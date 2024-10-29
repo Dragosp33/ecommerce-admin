@@ -466,6 +466,7 @@ export async function fetchFilteredProducts2(
 }
 
 export async function fetchFeaturedProduct() {
+  unstable_noStore();
   const client = await clientPromise;
   const db = client.db(); // Use your database name
   const featuredVariant = await db

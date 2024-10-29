@@ -1,6 +1,7 @@
 import { fetchFeaturedProduct } from '@/app/_lib/data';
+import { NextRequest } from 'next/server';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   //console.log(request);
   const featProduct = await fetchFeaturedProduct();
   console.log(' FEAT PRODUCT ::: ', featProduct);
